@@ -1,0 +1,43 @@
+{% extends 'base.html' %} {% block content %}
+<h1>Let's enter the data</h1>
+<form id="add-data-form">
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" required /><br />
+
+    <label for="father_name">Father's Name:</label>
+    <input type="text" id="father_name" name="father_name" /><br />
+
+    <label for="phone_number">Phone Number:</label>
+    <input type="tel" id="phone_number" name="phone_number" required /><br />
+
+    <label for="roll_no">Roll Number:</label>
+    <input type="text" id="roll_no" name="roll_no" /><br />
+
+    <label for="date_of_birth">Date of Birth:</label>
+    <input type="date" id="date_of_birth" name="date_of_birth" /><br />
+
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email" /><br />
+
+    <label for="pincode">Pincode:</label>
+    <input type="text" id="pincode" name="pincode" /><br />
+
+    <label for="application_no">Application Number:</label>
+    <input type="text" id="application_no" name="application_no" /><br />
+
+    <label for="audio">Audio File:</label>
+    <input type="file" id="audio" name="audio" accept="audio/*" /><br />
+
+    <input type="submit" value="Add" class="submit-button" />
+</form>
+
+<hr> <!-- Separator between forms -->
+
+<form id="bulk-import-form" action="/bulk_import" method="post" enctype="multipart/form-data">
+    <label for="file">Bulk Import:</label>
+    <input type="file" id="file" name="file" accept=".csv, application/vnd.ms-excel" /><br />
+
+    <input type="submit" value="Import" class="submit-button" />
+</form>
+</form>
+{% endblock %}

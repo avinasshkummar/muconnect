@@ -1,0 +1,92 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 0;
+    margin-left: 0;
+    margin-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.submit-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    color: white;
+    background-color: rgb(85, 7, 12);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-self: center;
+    justify-content: center;
+    width: 100%;
+
+}
+
+.submit-button:hover {
+    background-color: darkblue;
+}
+
+.navbar {
+    background-color: #f1f1f1;
+    overflow: hidden;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.navbar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f1f1f1;
+    overflow: hidden;
+}
+
+.navbar a {
+    display: block;
+    color: black;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    font-size: 17px;
+}
+
+.navbar a:hover {
+    background-color: #ddd;
+    color: black;
+}
+
+.navbar a.active {
+    background-color: #4CAF50;
+    color: white;
+}
+
+form {
+    margin: 0 auto;
+    width: 100%;
+    padding: 1em;
+    border: 1px solid #CCC;
+    border-radius: 1em;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+label {
+    display: block;
+    margin-top: 0.5em;
+    width: 45%;
+}
+
+input, select {
+    width: 45%;
+    padding: 0.5em;
+    margin-top: 0.5em;
+}
