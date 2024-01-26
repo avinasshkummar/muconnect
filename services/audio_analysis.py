@@ -55,7 +55,7 @@ class AudioAnalyzer:
 
             # Initialize transcription
             transcription = ""
-
+            temp_file = ""
             while start_time < audio_length:
                 # Extract 10-second chunk
                 chunk = audio[start_time:end_time]
@@ -85,7 +85,8 @@ class AudioAnalyzer:
                 # Move to next chunk
                 start_time = end_time
                 end_time += 10000
-
+            if os.path.exists(temp_file):
+                os.remove(temp_file)                
             # Print final transcription
             print(transcription)
 
