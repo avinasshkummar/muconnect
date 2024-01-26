@@ -1,6 +1,6 @@
 {% extends 'base.html' %} {% block content %}
 <h1>Search Here</h1>
-<form id="filter-form" action="/get_data" method="post">
+<form id="filter-form">
   <label for="name">Name:</label>
   <input type="text" id="name" name="name" /><br />
 
@@ -19,15 +19,25 @@
   <label for="email">Email:</label>
   <input type="email" id="email" name="email" /><br />
 
-  <label for="pincode">Pincode:</label>
+  <label for="pincode">Pin Code:</label>
   <input type="text" id="pincode" name="pincode" /><br />
 
   <label for="application_no">Application Number:</label>
   <input type="text" id="application_no" name="application_no" /><br />
 
   <!-- Dynamic select options would go here -->
+  <label for="tag">Tag:</label>
+  
+  <select id="tag" name="tag">
+    <option value="none">None</option>
+    {% for tag in tags %}
+        <option value="{{ tag }}">{{ tag }}</option>
+    {% endfor %}
+  </select>
+  <br />
+  
+  
   <!-- Replace with your server-side logic -->
-
   <input class="submit-button" type="submit" value="Search" class="button" />
 </form>
 <hr> <!-- Separator between forms -->

@@ -4,6 +4,19 @@ document.addEventListener("DOMContentLoaded", function () {
   const getDataForm = document.getElementById("filter-form");
   const loader = document.getElementById("loader");
   const overlay = document.getElementById("overlay");
+  var sentimentValues = document.querySelectorAll('.sentiment-value');
+
+  sentimentValues.forEach(function(element) {
+      var value = parseFloat(element.textContent);
+
+      if (value > 0.5) {
+          element.classList.add('sentiment-positive');
+      } else if (value < -0.5) {
+          element.classList.add('sentiment-negative');
+      } else {
+          element.classList.add('sentiment-neutral');
+      }
+  });
   if (bulkImportForm) {
     bulkImportForm.addEventListener("submit",async function (event) {
       event.preventDefault(); // Prevent the default form submission behavior

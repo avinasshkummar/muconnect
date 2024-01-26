@@ -1,10 +1,12 @@
 {% extends 'base.html' %} {% block content %}
+
+
 <h2>Profile Data:</h2>
 <div id="profileData">
     {% if profile.status == 'OK' %}
         {% for key, value in profile.items() %}
             {% if key != 'status' %}
-                <p>{{ key }}: {{ value }}</p>
+                <p>{{ key }}: <span {% if 'Sentiment' in key %}class="sentiment-value"{% endif %}>{{ value }}</span></p>
             {% endif %}
         {% endfor %}
     {% else %}

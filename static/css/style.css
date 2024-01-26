@@ -114,11 +114,38 @@ select {
   color: white;
 }
 #profileData {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-gap: 10px;
+  background-color: #f2f2f2;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px; /* Adjust the gap between items */
 }
 
+#profileData h2 {
+  color: #333;
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+#profileData p {
+  color: #666;
+  font-size: 16px;
+  margin-bottom: 5px;
+  
+  flex: 1 1 calc(33.333% - 10px); /* Adjust the third value to account for the gap */
+    /* Additional styling for items */
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: center;
+}
+/* Optional: Responsive behavior for smaller screens */
+@media (max-width: 600px) {
+  .item {
+      flex-basis: calc(50% - 10px); /* 2 items per row on small screens */
+  }
+}
 #overlay {
   position: fixed; /* Position it relative to the viewport */
   z-index: 999; /* Place it below the loader but above all other elements */
@@ -151,4 +178,24 @@ select {
   100% {
       transform: rotate(360deg);
   }
+}
+.sentiment-value {
+  font-weight: bold; /* Makes the text bold */
+  color: #000000; /* Default color */
+  padding: 5px;
+  border-radius: 4px;
+  background-color: #f0f0f0; /* Light grey background */
+}
+
+/* You can adjust the thresholds and colors as needed */
+.sentiment-positive {
+  color: #008000; /* Green for positive sentiment */
+}
+
+.sentiment-neutral {
+  color: #ffa500; /* Orange for neutral sentiment */
+}
+
+.sentiment-negative {
+  color: #ff0000; /* Red for negative sentiment */
 }

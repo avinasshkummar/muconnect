@@ -6,19 +6,24 @@ import tempfile
 import pandas as pd
 import psycopg2.extras
 
+from services.audio_analysis import AudioAnalyzer
+from db import get_db_connection  # Import the function from db.py
 
 app = Flask(__name__)
 
-# Database connection info. You should get these from environment variables or a configuration file.
-DATABASE_URL = os.environ.get('DATABASE_URL') or 'postgresql://postgres:@localhost:5433/muconnect'
-
-def get_db_connection():
-    conn = psycopg2.connect(DATABASE_URL)
-    return conn
-
 @app.route('/')
 def home():
-    return render_template('home.html', current_view='home')
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # Fetch all tags from the database
+    cur.execute("SELECT tag FROM Tags")
+    tags = [tag[0] for tag in cur.fetchall()]  # Convert tags to a list
+    
+    cur.close()
+    conn.close()
+
+    return render_template('home.html', current_view='home', tags=tags)
 
 @app.route('/data-entry')
 def data_entry_view():
@@ -38,7 +43,9 @@ def add_data():
         email = request.form['email']
         pincode = request.form['pincode']
         application_no = request.form['application_no']
-
+        audio_file = request.files['audio']
+        analyzer = AudioAnalyzer(audio_file)
+        
         conn = get_db_connection()
         cur = conn.cursor()
 
@@ -56,11 +63,13 @@ def add_data():
             applicant_id = result[0]
             cur.execute("UPDATE applicant_details SET name = %s WHERE id = %s", (name, applicant_id))
 
-
+        analysis_result = analyzer.analyse_audio(applicant_id)
+        if analysis_result['status'] == 'error':
+            return jsonify(analysis_result), 400
         # Insert into applicant_attributes
-        cur.execute("INSERT INTO applicant_attributes (applicant_id, father_name, roll_no, date_of_birth, email, pincode, application_no) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+        if all([father_name, roll_no, date_of_birth, email, pincode, application_no]):
+            cur.execute("INSERT INTO applicant_attributes (applicant_id, father_name, roll_no, date_of_birth, email, pincode, application_no) VALUES (%s, %s, %s, %s, %s, %s, %s)",
                     (applicant_id, father_name, roll_no, date_of_birth, email, pincode, application_no))
-
         conn.commit()
         cur.close()
         conn.close()
@@ -82,21 +91,31 @@ def get_data():
             'date_of_birth': request.form.get('date_of_birth'),
             'email': request.form.get('email'),
             'pincode': request.form.get('pincode'),
-            'application_no': request.form.get('application_no')
+            'application_no': request.form.get('application_no'),
+            'tag': request.form.get('tag')
         }
 
         query_parts = []
         params = []
 
         for key, value in form_data.items():
-            if value:
+            if value and key != 'tag':
                 query_parts.append(f"ad.{key} = %s" if key in ['name', 'phone_number'] else f"aa.{key} = %s")
                 params.append(value)
+
+        # Join condition for tables
+        join_condition = "FROM applicant_details ad JOIN applicant_attributes aa ON ad.id = aa.applicant_id"
+        
+        # Handle tag filtering
+        if form_data['tag'] != 'none':
+            join_condition += " JOIN relationship_tag_to_audio rta ON ad.id = rta.audio_id JOIN tags t ON rta.tag_id = t.id"
+            query_parts.append("t.tag = %s")
+            params.append(form_data['tag'])
 
         if not query_parts:
             return jsonify({'error': 'No search criteria provided'}), 400
 
-        query = f"SELECT distinct phone_number as number, name, ad.id as applicant_id FROM applicant_details ad JOIN applicant_attributes aa ON ad.id = aa.applicant_id WHERE {' OR '.join(query_parts)}"
+        query = f"SELECT DISTINCT phone_number as number, name, ad.id as applicant_id {join_condition} WHERE {' OR '.join(query_parts)}"
 
         conn = get_db_connection()
         cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
@@ -116,36 +135,68 @@ def profile(applicant_id):
     try:
         conn = get_db_connection()
         cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-        cur.execute("SELECT * FROM applicant_details ad JOIN applicant_attributes aa ON ad.id = aa.applicant_id WHERE ad.id = %s", (applicant_id,))
-        result = cur.fetchall()
+
+        # Fetch applicant details and attributes
+        cur.execute("""
+            SELECT * FROM applicant_details ad 
+            JOIN applicant_attributes aa ON ad.id = aa.applicant_id 
+            WHERE ad.id = %s
+        """, (applicant_id,))
+        applicant_info = cur.fetchall()
+
+        # Fetch audio analysis data
+        cur.execute("""
+            SELECT * FROM audios_analysis 
+            WHERE applicant_id = %s
+        """, (applicant_id,))
+        audio_analysis = cur.fetchall()
+
+        # Initialize summarized result
+        summarized_result = {"status": "OK"}
+
+        if not applicant_info:
+            summarized_result = {'status': 'Error', 'message': 'No data for profile'}
+        else:
+            # Basic details
+            summarized_result.update({
+                "Name": applicant_info[0]['name'],
+                "Phone Number": applicant_info[0]['phone_number'],
+                "Tags": []
+            })
+
+            # Applicant attributes
+            for i, row in enumerate(applicant_info, start=1):
+                summarized_result.update({
+                    f"Father's Name {i}": row['father_name'],
+                    f"Roll Number {i}": row['roll_no'],
+                    f"Date Of Birth {i}": row['date_of_birth'],
+                    f"Email {i}": row['email'],
+                    f"Pincode {i}": row['pincode'],
+                    f"Application Number {i}": row['application_no']
+                })
+
+            # Audio analysis data
+            for i, analysis in enumerate(audio_analysis, start=1):
+                summarized_result[f"Audio Analysis {i}"] = analysis['audio_transcription']
+                summarized_result[f"Sentiment {i}"] = analysis['sentiment_analysis']
+                summarized_result[f"Summarization {i}"] = analysis['summarization']
+                # Fetch tags for each audio analysis
+                cur.execute("""
+                    SELECT t.tag FROM tags t
+                    JOIN relationship_tag_to_audio rta ON t.id = rta.tag_id
+                    WHERE rta.audio_id = %s
+                """, (analysis['id'],))
+                tags = cur.fetchall()
+                tag_list = [tag['tag'] for tag in tags]
+                summarized_result["Tags"].extend(tag_list)
+
         cur.close()
         conn.close()
-
-        summarized_result = {}
-        if result is None:
-            result = {'status': 'Error', 'message': 'No data for profile'}
-        else:
-            # Convert the result to a list of dictionaries
-            result = [dict(row) for row in result]
-
-            summarized_result["Name"] = result[0]['name']
-            summarized_result["Phone Number"] = result[0]['phone_number']
-            # Iterate through the result and modify attribute names
-            i = 1
-            for row in result:
-                summarized_result["Father's Name "+ str(i)] = row['father_name']
-                summarized_result["Roll Number "+ str(i)] = row['roll_no']
-                summarized_result["Date Of Birth "+ str(i)] = row['date_of_birth']
-                summarized_result["Email "+ str(i)] = row['email']
-                summarized_result["Pincode "+ str(i)] = row['pincode']
-                summarized_result["Application Number "+ str(i)] = row['application_no']
-                i += 1
-            # Flatten the dictionaries and add status key with value 'OK'
-            summarized_result["status"]= 'OK'
-            print(summarized_result)
     except Exception as e:
         summarized_result = {'status': 'Error', 'message': str(e)}
+
     return render_template('profile.html', profile=summarized_result)
+
 
 def check_headers(data):
             expected_headers = ['Application_No', 'Date_of_Birth', 'Roll_No', 'Candidate_Name', 'Gender', 'Father_Name', 'Area', 'Locality', 'City', 'State', 'PinCode', 'Mobile_Number', 'Email']
