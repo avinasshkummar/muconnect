@@ -86,7 +86,7 @@ class AudioAnalyzer:
                 start_time = end_time
                 end_time += 10000
             if os.path.exists(temp_file):
-                os.remove(temp_file)                
+                os.remove(temp_file)
             # Print final transcription
             print(transcription)
 
