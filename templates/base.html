@@ -8,13 +8,16 @@
             rel="stylesheet"
             href="{{ url_for('static', filename='css/style.css') }}"
         />
-        <style></style>
+        
     </head>
     <body>
         <div class="container">
             <div class="navbar">
                 <a class="nav-item {% if current_view == 'home' %}active{% endif %}" href="/">Home</a>
                 <a class="nav-item {% if current_view == 'data_entry' %}active{% endif %}" href="/data-entry">Data Entry</a>
+            </div>
+            <div id="overlay">
+                <div id="loader"></div>
             </div>
             {% block content %}{% endblock %}
             <script src="{{ url_for('static', filename='js/script.js') }}"></script>

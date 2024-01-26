@@ -1,0 +1,14 @@
+{% extends 'base.html' %} {% block content %}
+<h2>Profile Data:</h2>
+<div id="profileData">
+    {% if profile.status == 'OK' %}
+        {% for key, value in profile.items() %}
+            {% if key != 'status' %}
+                <p>{{ key }}: {{ value }}</p>
+            {% endif %}
+        {% endfor %}
+    {% else %}
+        <p>Message: {{ profile.message }}</p>
+    {% endif %}
+</div>
+{% endblock %}

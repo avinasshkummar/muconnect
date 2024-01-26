@@ -1,6 +1,6 @@
 {% extends 'base.html' %} {% block content %}
 <h1>Search Here</h1>
-<form id="filter-form" action="/submit_query" method="post">
+<form id="filter-form" action="/get_data" method="post">
   <label for="name">Name:</label>
   <input type="text" id="name" name="name" /><br />
 
@@ -31,4 +31,14 @@
   <input class="submit-button" type="submit" value="Search" class="button" />
 </form>
 <hr> <!-- Separator between forms -->
+<table id="data-table">
+  <thead>
+      <tr>
+          <!-- Table headers will go here -->
+      </tr>
+  </thead>
+  <tbody>
+      <!-- Table data will go here -->
+  </tbody>
+</table>
 {% endblock %}
