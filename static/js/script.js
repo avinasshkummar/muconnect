@@ -48,6 +48,8 @@ document.addEventListener("DOMContentLoaded", function () {
           "There has been a problem with your fetch operation:",
           error
         );
+        alert("Failed to import data. Please try again."); // Alert for error
+
       } finally {
         // Hide loader
         loader.style.display = "none";
@@ -88,6 +90,8 @@ document.addEventListener("DOMContentLoaded", function () {
           "There has been a problem with your fetch operation:",
           error
         );
+        alert("Failed to add data. Please try again."); // Alert for error
+
       } finally {
         // Hide loader
         loader.style.display = "none";
@@ -169,6 +173,8 @@ document.addEventListener("DOMContentLoaded", function () {
           "There has been a problem with your fetch operation:",
           error
         );
+        alert("Failed to retrieve data. Please try again."); // Alert for error
+
       } finally {
         // Hide loader
         loader.style.display = "none";

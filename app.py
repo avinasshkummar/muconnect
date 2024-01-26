@@ -43,9 +43,7 @@ def add_data():
         email = request.form['email']
         pincode = request.form['pincode']
         application_no = request.form['application_no']
-        audio_file = request.files['audio']
-        analyzer = AudioAnalyzer(audio_file)
-        
+
         conn = get_db_connection()
         cur = conn.cursor()
 
@@ -62,12 +60,15 @@ def add_data():
             # Phone number exists, use existing applicant_id
             applicant_id = result[0]
             cur.execute("UPDATE applicant_details SET name = %s WHERE id = %s", (name, applicant_id))
-
-        analysis_result = analyzer.analyse_audio(applicant_id)
-        if analysis_result['status'] == 'error':
-            return jsonify(analysis_result), 400
+            
+        audio_file = request.files['audio'] if request.files['audio'].filename != '' else None
+        if audio_file is not None:
+            analyzer = AudioAnalyzer(audio_file)
+            analysis_result = analyzer.analyse_audio(applicant_id)
+            if analysis_result['status'] == 'error':
+                return jsonify(analysis_result), 400
         # Insert into applicant_attributes
-        if all([father_name, roll_no, date_of_birth, email, pincode, application_no]):
+        if any([father_name, roll_no, date_of_birth, email, pincode, application_no]):
             cur.execute("INSERT INTO applicant_attributes (applicant_id, father_name, roll_no, date_of_birth, email, pincode, application_no) VALUES (%s, %s, %s, %s, %s, %s, %s)",
                     (applicant_id, father_name, roll_no, date_of_birth, email, pincode, application_no))
         conn.commit()
@@ -104,11 +105,11 @@ def get_data():
                 params.append(value)
 
         # Join condition for tables
-        join_condition = "FROM applicant_details ad JOIN applicant_attributes aa ON ad.id = aa.applicant_id"
+        join_condition = "FROM applicant_details ad LEFT JOIN applicant_attributes aa ON ad.id = aa.applicant_id"
         
         # Handle tag filtering
         if form_data['tag'] != 'none':
-            join_condition += " JOIN relationship_tag_to_audio rta ON ad.id = rta.audio_id JOIN tags t ON rta.tag_id = t.id"
+            join_condition += " LEFT JOIN relationship_tag_to_audio rta ON ad.id = rta.audio_id LEFT JOIN tags t ON rta.tag_id = t.id"
             query_parts.append("t.tag = %s")
             params.append(form_data['tag'])
 
