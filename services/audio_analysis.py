@@ -122,6 +122,10 @@ class AudioAnalyzer:
                 tag_id = cur.fetchone()
                 if tag_id is not None:
                     tag_ids.append(tag_id[0])
+                else:
+                    cur.execute("SELECT id FROM Tags WHERE tag = %s", (keyword,))
+                    tag_id = cur.fetchone()
+                    tag_ids.append(tag_id[0])    
 
             # Insert relationships into Relationship_tag_to_audio table
             for tag_id in tag_ids:

@@ -140,7 +140,7 @@ def profile(applicant_id):
         # Fetch applicant details and attributes
         cur.execute("""
             SELECT * FROM applicant_details ad 
-            JOIN applicant_attributes aa ON ad.id = aa.applicant_id 
+            LEFT JOIN applicant_attributes aa ON ad.id = aa.applicant_id 
             WHERE ad.id = %s
         """, (applicant_id,))
         applicant_info = cur.fetchall()
